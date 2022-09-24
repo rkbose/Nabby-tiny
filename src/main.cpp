@@ -11,7 +11,7 @@
 // You should have received a copy of the GNU General Public License along with Nabby-tiny. If not, see <https://www.gnu.org/licenses/>.
 //
      
-#define VERSION "23September2022a"
+#define VERSION "23September2022a" 
 #include <HardwareSerial.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
