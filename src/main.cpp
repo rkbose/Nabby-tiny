@@ -86,14 +86,7 @@ void connectWifi()
   Serial.printf("UDP server on port %d\n", 1234);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-void loop() {
-  // put your main code here, to run repeatedly:.....
-}
-=======
-=======
->>>>>>> e8244c2920c8810f37e042bb84051796103c5db7
+
 String levelString = "xxxxxxxxxxxxxx";
 
 // Initialize the data parser using the start, end and delimiting character
@@ -162,7 +155,3 @@ void loop()
     dcp.appendChar(c);
   }
 }
-<<<<<<< HEAD
->>>>>>> 122f9e8 (First commit)
-=======
->>>>>>> e8244c2920c8810f37e042bb84051796103c5db7
