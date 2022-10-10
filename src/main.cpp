@@ -11,7 +11,6 @@
 // You should have received a copy of the GNU General Public License along with Nabby-tiny. If not, see <https://www.gnu.org/licenses/>.
 //..
      
-#define VERSION "23September2022a -dev-" 
 #include <HardwareSerial.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
@@ -22,6 +21,8 @@
 #include <DynamicCommandParser.h>
 #include <Parsers.h>
 
+#define VERSION "10October2022a -dev-"
+String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
 #define MP3_SERIAL_TIMEOUT 100 // average DFPlayer response timeout 100msec..200msec
@@ -30,6 +31,8 @@ uint8_t response = 0;
 #define RXD2 16
 #define TXD2 17
 
+// Initialize the data parser using the start, end and delimiting character
+DynamicCommandParser dcp('/', 0x0D, ',');
 
 WiFiMulti wifiMulti;
 
@@ -38,9 +41,8 @@ void connectWifi()
   WiFi.mode(WIFI_STA); // Set WiFi to station mode and disconnect from an AP if it was previously connected
   WiFi.disconnect();
   delay(100);
-
+/*
   int n = WiFi.scanNetworks(); // WiFi.scanNetworks will return the number of networks found
-  Serial.println("scan done");
   if (n == 0)
   {
     Serial.println("no networks found");
@@ -61,9 +63,10 @@ void connectWifi()
       delay(10);
     }
   }
-  //  wifiMulti.addAP(SSID3, PSW3);
+*/
   wifiMulti.addAP(SSID1, PSW1);
   wifiMulti.addAP(SSID2, PSW2);
+  wifiMulti.addAP(SSID3, PSW3);
 
   Serial.print("Connecting Wifi -");
   while (wifiMulti.run() != WL_CONNECTED)
@@ -78,40 +81,29 @@ void connectWifi()
   Serial.print(";   IP addr: ");
   Serial.println(WiFi.localIP());
 
-  if (MDNS.begin("Nabby-mini"))
+  if (MDNS.begin("Nabby-mini-speaker"))
   {
-    MDNS.addService("Nabby-mini", "udp", 1234); // Announce service on port x
+    MDNS.addService("Speaker", "udp", 1234); // Announce service on port x
     Serial.println("MDNS responder started");
   }
   Serial.printf("UDP server on port %d\n", 1234);
 }
 
-
-String levelString = "xxxxxxxxxxxxxx";
-
-// Initialize the data parser using the start, end and delimiting character
-DynamicCommandParser dcp('/', 0x0D, ',');
-
-
 void setup()
 {
+  version = VERSION;
   Serial.begin(115200); // debug interface
-                        //  Serial2.begin(9600, SERIAL_8N1, 16, 17);  // MP3 interface
-  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
-
   Serial.print("\nNabby-tiny is starting\n");
+
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // MP# interface connection
  
 //  Serial.println("Serial2 Txd is on pin: " + String(TXD2));
 //  Serial.println("Serial2 Rxd is on pin: " + String(RXD2));
-  Serial.print("Commands:\n");
-  Serial.print("  /inf      --- shows version\n");
-  Serial.print("  /mvp,x,x  --- dummy command\n");
-  Serial.print("  /tra,n    --- select track\n");
-  Serial.print("  /vol,n    --- set volume\n");
 
   mp3.begin(Serial2, MP3_SERIAL_TIMEOUT, DFPLAYER_MINI, false); // DFPLAYER_MINI see NOTE, false=no response from module after the command
 
-  delay(2000);
+  connectWifi();  // connect to WiFi access point
+//  delay(2000);
   mp3.stop(); // if player was runing during ESP8266 reboot
   delay(100);
   mp3.reset(); // reset all setting to default
@@ -125,18 +117,13 @@ void setup()
   mp3.playTrack(2); // play track #1, donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be played firts
  // delay(500);
 
-  // Serial2.begin(9600, SERIAL_8N1, 16, 17);  // MP3 interface
-
-  // connectWifi();  // connect to WiFi access point
-
-  //make VERSION available in parsers
-  parsers(VERSION);
   // Add the parser commands to the DynamicCommandParser
   dcp.addParser("inf", getInfo);
+  dcp.addParser("hlp", printHelp);
   dcp.addParser("mvp", multipleVariableParser);
   dcp.addParser("tra", selectTrack);
   dcp.addParser("vol", setVolume);
-
+  printParserCommands();
   Serial.println("end of setup()");
 }
 

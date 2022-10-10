@@ -3,11 +3,15 @@
 #include "Parsers.h"
 
 extern DFPlayer mp3;
-String version;
+extern String version;
 
-void parsers(String versie)
-{
-  version = versie;
+void printParserCommands(void) {
+Serial.print("\n   ===> Commands:\n");
+  Serial.print("      /inf      --- shows version\n");
+  Serial.print("      /hlp      --- print commands\n");
+  Serial.print("      /mvp,x,x  --- dummy command\n");
+  Serial.print("      /tra,n    --- select track\n");
+  Serial.print("      /vol,n    --- set volume\n");
 }
 
 // Parser for the MVP command
@@ -36,6 +40,12 @@ void getInfo(char **values, int valueCount)
     Serial.print("   ===> Software version Nabby-tiny: ");
     Serial.print(version);
   }
+}
+
+// Parser printing help on commands
+void printHelp(char **values, int valuecount)
+{
+printParserCommands();
 }
 
 // Parser for track selection
