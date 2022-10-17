@@ -3,19 +3,28 @@
 // Nabby-tiny is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 // You should have received a copy of the GNU General Public License along with Nabby-tiny. If not, see <https://www.gnu.org/licenses/>.
 
+#include <HardwareSerial.h>
 #include "DynamicCommandParser.h"
+#include <string.h>
+#include <AsyncUDP.h>
 
 void DynamicCommandParser::addParser(char *cmd, ParserFunction function)
 {
   mParserLookupSize++;
-  mParserLookup = (ParserFunctionLookup*)realloc(mParserLookup, (mParserLookupSize) * sizeof(ParserFunctionLookup));
-  mParserLookup[mParserLookupSize-1].command = cmd;
-  mParserLookup[mParserLookupSize-1].function = function;
+  mParserLookup = (ParserFunctionLookup *)realloc(mParserLookup, (mParserLookupSize) * sizeof(ParserFunctionLookup));
+  mParserLookup[mParserLookupSize - 1].command = cmd;
+  mParserLookup[mParserLookupSize - 1].function = function;
+}
+
+void DynamicCommandParser::append(AsyncUDPPacket *pct)
+{
+  packet = pct;
+  append((char*)packet->data());
 }
 
 void DynamicCommandParser::append(char *str)
 {
-  for(size_t i = 0; i < strlen(str); i++)
+  for (size_t i = 0; i < strlen(str); i++)
   {
     appendChar(str[i]);
   }
@@ -25,22 +34,22 @@ void DynamicCommandParser::appendChar(char c)
 {
   size_t bufferLength = strlen(buffer);
 
-  if(c == mStart)
+  if (c == mStart)
   {
     mInCommand = true;
     buffer[0] = 0;
     return;
   }
-  else if(c == mEnd)
+  else if (c == mEnd)
   {
     parseBuffer();
     buffer[0] = '\0';
     mInCommand = false;
   }
-  else if(mInCommand)
+  else if (mInCommand)
   {
     buffer[bufferLength] = c;
-    buffer[bufferLength+1] = '\0';
+    buffer[bufferLength + 1] = '\0';
   }
 }
 
@@ -48,40 +57,50 @@ void DynamicCommandParser::parseBuffer()
 {
   // Split buffer
   int partCount = getBufferPartCount();
-  char **parts = (char**)malloc(partCount * sizeof(char*));
+  char **parts = (char **)malloc(partCount * sizeof(char *));
 
   parts[0] = buffer;
   int currentPart = 0;
 
-  for(int i = 0; buffer[i] != 0; i++)
+  for (int i = 0; buffer[i] != 0; i++)
   {
-    if(buffer[i] == mDelimiter)
+    if (buffer[i] == mDelimiter)
     {
       buffer[i] = 0;
       currentPart++;
-      parts[currentPart] = &buffer[i+1];
+      parts[currentPart] = &buffer[i + 1];
     }
   }
 
-  for(size_t i = 0; i < mParserLookupSize; i++)
+String result = "";
+
+  for (size_t i = 0; i < mParserLookupSize; i++)
   {
-    if(strcmp(mParserLookup[i].command, parts[0]) == 0)
+    if (strcmp(mParserLookup[i].command, parts[0]) == 0)
     {
-      mParserLookup[i].function(parts, partCount);
+      result = mParserLookup[i].function(parts, partCount);
+      Serial.printf("\n.... result is: ");
+      Serial.print(result);
+      if (udppackets) {packet->print(result);}
       break;
     }
   }
-
   free(parts);
 }
 
 int DynamicCommandParser::getBufferPartCount()
 {
   int count = 1;
-  for(size_t i = 0; i < strlen(buffer); i++)
+  for (size_t i = 0; i < strlen(buffer); i++)
   {
-    if(buffer[i] == mDelimiter)
+    if (buffer[i] == mDelimiter)
       count++;
   }
   return count;
 }
+/*
+String DynamicCommandParser::getresult()
+{
+return response;
+}
+*/

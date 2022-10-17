@@ -8,10 +8,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <AsyncUDP.h>
 
 #define BUFFER_SIZE 64
 
-typedef void (* ParserFunction)(char **values, int valueCount);
+//typedef void (* ParserFunction)(char **values, int valueCount);
+typedef String (* ParserFunction)(char **values, int valueCount);
 
 typedef struct
 {
@@ -22,7 +24,7 @@ typedef struct
 class DynamicCommandParser
 {
 public:
-  DynamicCommandParser(char start, char end, char delim)
+  DynamicCommandParser(char start, char end, char delim, bool udp)
   {
     mInCommand = false;
     mStart = start;
@@ -32,6 +34,8 @@ public:
     mParserLookup = NULL;
     mParserLookupSize = 0;
     buffer[0] = '\0';
+//    if (udp == true) udppackets = true; else udppackets = false;
+    udppackets = udp;
   }
 
   ~DynamicCommandParser()
@@ -41,7 +45,9 @@ public:
 
   void addParser(char *cmd, ParserFunction function);
   void append(char *str);
+  void append(AsyncUDPPacket *pct);
   void appendChar(char c);
+ // String getresult();
 
 private:
   bool mInCommand;
@@ -49,6 +55,8 @@ private:
   char mStart;
   char mEnd;
   char mDelimiter;
+  AsyncUDPPacket *packet;
+  bool udppackets; 
 
   size_t mParserLookupSize;
   ParserFunctionLookup *mParserLookup;

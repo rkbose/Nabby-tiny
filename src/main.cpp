@@ -14,14 +14,14 @@
 #include <HardwareSerial.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
+#include <AsyncUDP.h>
 #include <Secret.h>
-//#include <AsyncUDP.h>
 #include <ESPmDNS.h>
 #include <dfplayer.h>
 #include <DynamicCommandParser.h>
 #include <Parsers.h>
 
-#define VERSION "10October2022a -dev-"
+#define VERSION "17October2022a -dev-"
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -32,8 +32,10 @@ uint8_t response = 0;
 #define TXD2 17
 
 // Initialize the data parser using the start, end and delimiting character
-DynamicCommandParser dcp('/', 0x0D, ',');
+DynamicCommandParser dcp_ser('/', 0x0D, ',', false); // parser for serial
+DynamicCommandParser dcp_udp('/', 0x0D, ',', true);  // parser for udp
 
+AsyncUDP udp;
 WiFiMulti wifiMulti;
 
 void connectWifi()
@@ -96,6 +98,18 @@ void connectWifi()
     Serial.printf("mDNS 'doorbell' services found: %d\n", n);
 }
 
+void handleUdp()
+{
+  if (udp.listen(1235))
+  {
+    udp.onPacket([](AsyncUDPPacket packet)
+                 {Serial.printf("udp rcv: %s\n",(char *)packet.data());
+                   dcp_udp.append(&packet);
+//      String reply = dcp_udp.append(myString);
+       });
+  }
+}
+
 void setup()
 {
   version = VERSION;
@@ -124,12 +138,14 @@ void setup()
                      // delay(500);
 
   // Add the parser commands to the DynamicCommandParser
-  dcp.addParser("inf", getInfo);
-  dcp.addParser("hlp", printHelp);
-  dcp.addParser("mvp", multipleVariableParser);
-  dcp.addParser("tra", selectTrack);
-  dcp.addParser("vol", setVolume);
+  dcp_ser.addParser("inf", getInfo);
+  dcp_ser.addParser("hlp", printHelp);
+  dcp_ser.addParser("mvp", multipleVariableParser);
+  dcp_ser.addParser("tra", selectTrack);
+  dcp_ser.addParser("vol", setVolume);
   printParserCommands();
+
+  dcp_udp.addParser("inf", getInfo_udp);
   Serial.println("end of setup()");
 }
 
@@ -145,6 +161,7 @@ void loop()
   {
     c = Serial.read();
     Serial.print(c);
-    dcp.appendChar(c);
+    dcp_ser.appendChar(c);
   }
+  handleUdp(); // handle and parse commands received via UDP
 }

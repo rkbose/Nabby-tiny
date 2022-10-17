@@ -6,6 +6,7 @@
 #include <HardwareSerial.h>
 #include <dfplayer.h>
 #include "Parsers.h"
+#include <AsyncUDP.h>
 
 extern DFPlayer mp3;
 extern String version;
@@ -20,7 +21,7 @@ Serial.print("\n   ===> Commands:\n");
 }
 
 // Parser for the MVP command
-void multipleVariableParser(char **values, int valueCount)
+String multipleVariableParser(char **values, int valueCount)
 {
   Serial.println("   ===> multipleVariableParser:");
   for (int i = 1; i < valueCount; i++)
@@ -33,10 +34,11 @@ void multipleVariableParser(char **values, int valueCount)
     sscanf(values[i], "%d", &jj);
     Serial.printf("the value is %d\n", jj);
   }
+  return("MVP is done   ");
 }
 
 // Parser for the getInfo command
-void getInfo(char **values, int valueCount)
+String getInfo(char **values, int valueCount)
 {
   if (valueCount > 1)
     Serial.println("   ===> getInfo does not accept parameters.");
@@ -45,16 +47,31 @@ void getInfo(char **values, int valueCount)
     Serial.print("   ===> Software version Nabby-tiny: ");
     Serial.print(version);
   }
+return("INF is done    ");
+}
+
+// Parser for the getInfo command
+String getInfo_udp(char **values, int valueCount)
+{
+  if (valueCount > 1)
+    Serial.println("   ===> (udp) getInfo does not accept parameters.");
+  else
+  {
+    Serial.print("   ===> (udp) Software version Nabby-tiny: ");
+    Serial.print(version);
+  }
+return("INFudp is done    ");
 }
 
 // Parser printing help on commands
-void printHelp(char **values, int valuecount)
+String printHelp(char **values, int valuecount)
 {
 printParserCommands();
+return("HLP is done    ");
 }
 
 // Parser for track selection
-void selectTrack(char **values, int valueCount)
+String selectTrack(char **values, int valueCount)
 {
   if (valueCount != 2)
     Serial.print("   ===> selectTrack requires one parameter.");
@@ -66,10 +83,11 @@ void selectTrack(char **values, int valueCount)
     mp3.playTrack(jj);
     delay(500);
   }
+return("TRC is done    ");
 }
 
 // Parser for the setVolume command
-void setVolume(char **values, int valueCount)
+String setVolume(char **values, int valueCount)
 {
   if (valueCount != 2)
     Serial.println("   ===> setVolume requires one parameter.");
@@ -81,4 +99,5 @@ void setVolume(char **values, int valueCount)
     mp3.setVolume(jj); // 0..30, module persists volume on power failure
     delay(500);
   }
+return("VOL is done    ");
 }
