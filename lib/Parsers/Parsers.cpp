@@ -21,7 +21,7 @@ Serial.print("\n   ===> Commands:\n");
 }
 
 // Parser for the MVP command
-String multipleVariableParser(char **values, int valueCount)
+String multipleVariableParser(char **values, int valueCount, bool udppackets)
 {
   Serial.println("   ===> multipleVariableParser:");
   for (int i = 1; i < valueCount; i++)
@@ -38,66 +38,63 @@ String multipleVariableParser(char **values, int valueCount)
 }
 
 // Parser for the getInfo command
-String getInfo(char **values, int valueCount)
+String getInfo(char **values, int valueCount, bool udppackets)
 {
+  char buffer[100];
   if (valueCount > 1)
     Serial.println("   ===> getInfo does not accept parameters.");
   else
   {
+    if (!udppackets)
+     {
     Serial.print("   ===> Software version Nabby-tiny: ");
     Serial.print(version);
+     }
   }
-return("INF is done    ");
+snprintf(buffer, 100, "Nabby-tiny Software version: {%s}   [INF done]", version.c_str());  
+return(buffer);
 }
 
-// Parser for the getInfo command
-String getInfo_udp(char **values, int valueCount)
-{
-  if (valueCount > 1)
-    Serial.println("   ===> (udp) getInfo does not accept parameters.");
-  else
-  {
-    Serial.print("   ===> (udp) Software version Nabby-tiny: ");
-    Serial.print(version);
-  }
-return("INFudp is done    ");
-}
 
 // Parser printing help on commands
-String printHelp(char **values, int valuecount)
+String printHelp(char **values, int valuecount, bool udppackets)
 {
 printParserCommands();
 return("HLP is done    ");
 }
 
 // Parser for track selection
-String selectTrack(char **values, int valueCount)
+String selectTrack(char **values, int valueCount, bool udppackets)
 {
   if (valueCount != 2)
-    Serial.print("   ===> selectTrack requires one parameter.");
+   {
+    if (!udppackets) Serial.print("   ===> selectTrack requires one parameter.");
+   }
   else
   {
     int jj;
     sscanf(values[1], "%d", &jj);
-    Serial.printf("   ===> Selected track: %d", jj);
+    if (!udppackets) Serial.printf("   ===> Selected track: %d", jj);
     mp3.playTrack(jj);
     delay(500);
   }
-return("TRC is done    ");
+return("[TRC done] ");
 }
 
 // Parser for the setVolume command
-String setVolume(char **values, int valueCount)
+String setVolume(char **values, int valueCount, bool udppackets)
 {
   if (valueCount != 2)
-    Serial.println("   ===> setVolume requires one parameter.");
+   {
+    if (!udppackets) Serial.println("   ===> setVolume requires one parameter.");
+   }
   else
   {
     int jj;
     sscanf(values[1], "%d", &jj);
-    Serial.printf("   ===> Volume set to: %d", jj);
+    if (!udppackets) Serial.printf("   ===> Volume set to: %d", jj);
     mp3.setVolume(jj); // 0..30, module persists volume on power failure
     delay(500);
   }
-return("VOL is done    ");
+return("[VOL done] ");
 }

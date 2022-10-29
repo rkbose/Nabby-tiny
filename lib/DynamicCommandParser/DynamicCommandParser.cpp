@@ -19,7 +19,8 @@ void DynamicCommandParser::addParser(char *cmd, ParserFunction function)
 void DynamicCommandParser::append(AsyncUDPPacket *pct)
 {
   packet = pct;
-  append((char*)packet->data());
+  udppackets = true;
+  append((char *)packet->data());
 }
 
 void DynamicCommandParser::append(char *str)
@@ -72,16 +73,18 @@ void DynamicCommandParser::parseBuffer()
     }
   }
 
-String result = "";
+  String result = "";
 
   for (size_t i = 0; i < mParserLookupSize; i++)
   {
     if (strcmp(mParserLookup[i].command, parts[0]) == 0)
     {
-      result = mParserLookup[i].function(parts, partCount);
-      Serial.printf("\n.... result is: ");
-      Serial.print(result);
-      if (udppackets) {packet->print(result);}
+      result = mParserLookup[i].function(parts, partCount, udppackets);
+      if (udppackets)
+      {
+        packet->print(result);
+        udppackets = false;
+      } // return result in UDP packet
       break;
     }
   }

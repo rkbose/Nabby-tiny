@@ -21,7 +21,7 @@
 #include <DynamicCommandParser.h>
 #include <Parsers.h>
 
-#define VERSION "17October2022a -dev-"
+#define VERSION "28October2022a -dev-"
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -31,9 +31,14 @@ uint8_t response = 0;
 #define RXD2 16
 #define TXD2 17
 
-// Initialize the data parser using the start, end and delimiting character
-DynamicCommandParser dcp_ser('/', 0x0D, ',', false); // parser for serial
-DynamicCommandParser dcp_udp('/', 0x0D, ',', true);  // parser for udp
+// Initialize the command parsers using the start, end, delimiting characters
+// A seperate parser is instantiated for UDP. This is strictly not neccesry, but had adavateges like:
+//    - the udp parser can have different commands (or delimiting chars) then the serial parser, or a subset/superset of commands
+//    - with one parser there is a very small chance serial commands mix up with udp commands. Seperation resolves this
+// Downside is memory space.
+//
+DynamicCommandParser dcp_ser('/', 0x0D, ','); // parser for serial
+DynamicCommandParser dcp_udp('/', 0x0D, ',');  // parser for udp
 
 AsyncUDP udp;
 WiFiMulti wifiMulti;
@@ -102,11 +107,12 @@ void handleUdp()
 {
   if (udp.listen(1235))
   {
-    udp.onPacket([](AsyncUDPPacket packet)
-                 {Serial.printf("udp rcv: %s\n",(char *)packet.data());
-                   dcp_udp.append(&packet);
+    udp.onPacket([](AsyncUDPPacket packet)     {
+                //  Serial.printf("udp rcv: %s\n",(char *)packet.data());
+                    dcp_udp.append(&packet);
+ //                  dcp_udp.append(&packet);
 //      String reply = dcp_udp.append(myString);
-       });
+ });
   }
 }
 
@@ -132,10 +138,10 @@ void setup()
                     // delay(500);
   mp3.wakeup(2);    // exit standby mode & initialize sourse 1=USB-Disk, 2=TF-Card, 3=Aux, 5=NOR Flash
   delay(500);
-  mp3.setVolume(10); // 0..30, module persists volume on power failure
-                     // delay(500);
+  mp3.setVolume(14); // 0..30, module persists volume on power failure
+  delay(500);
   mp3.playTrack(2);  // play track #1, donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be played firts
-                     // delay(500);
+  delay(500);
 
   // Add the parser commands to the DynamicCommandParser
   dcp_ser.addParser("inf", getInfo);
@@ -145,7 +151,10 @@ void setup()
   dcp_ser.addParser("vol", setVolume);
   printParserCommands();
 
-  dcp_udp.addParser("inf", getInfo_udp);
+  dcp_udp.addParser("inf", getInfo);
+  dcp_udp.addParser("tra", selectTrack);
+  dcp_udp.addParser("vol", setVolume);
+
   Serial.println("end of setup()");
 }
 
@@ -162,6 +171,7 @@ void loop()
     c = Serial.read();
     Serial.print(c);
     dcp_ser.appendChar(c);
+    //   dcp_ser.appendChar(c);
   }
   handleUdp(); // handle and parse commands received via UDP
 }

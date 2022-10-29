@@ -13,7 +13,7 @@
 #define BUFFER_SIZE 64
 
 //typedef void (* ParserFunction)(char **values, int valueCount);
-typedef String (* ParserFunction)(char **values, int valueCount);
+typedef String (* ParserFunction)(char **values, int valueCount, bool udppacket);
 
 typedef struct
 {
@@ -24,7 +24,7 @@ typedef struct
 class DynamicCommandParser
 {
 public:
-  DynamicCommandParser(char start, char end, char delim, bool udp)
+  DynamicCommandParser(char start, char end, char delim)
   {
     mInCommand = false;
     mStart = start;
@@ -35,7 +35,7 @@ public:
     mParserLookupSize = 0;
     buffer[0] = '\0';
 //    if (udp == true) udppackets = true; else udppackets = false;
-    udppackets = udp;
+    udppackets = false;
   }
 
   ~DynamicCommandParser()

@@ -8,13 +8,13 @@
 
 //parser commands for serial connection:
 void printParserCommands(void);
-String multipleVariableParser(char **values, int valueCount);
-String getInfo(char **values, int valueCount);
-String printHelp(char **values, int valuecount);
-String selectTrack(char **values, int valueCount);
-String setVolume(char **values, int valueCount);
+String multipleVariableParser(char **values, int valueCount, bool udppackets);
+String getInfo(char **values, int valueCount, bool udppackets);
+String printHelp(char **values, int valuecount, bool udppackets);
+String selectTrack(char **values, int valueCount, bool udppackets);
+String setVolume(char **values, int valueCount, bool udppackets);
 
 //parser commands for UDP connection:
-String getInfo_udp(char **values, int valueCount);
+//String getInfo_udp(char **values, int valueCount);
 
 #endif
