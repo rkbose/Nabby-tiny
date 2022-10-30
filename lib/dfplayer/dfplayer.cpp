@@ -87,7 +87,6 @@ void DFPlayer::setModel(DFPLAYER_MODULE_TYPE moduleType)
   _moduleType = moduleType;
 }
 
-
 /**************************************************************************/
 /*
     setTimeout()

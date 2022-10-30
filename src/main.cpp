@@ -21,7 +21,7 @@
 #include <DynamicCommandParser.h>
 #include <Parsers.h>
 
-#define VERSION "28October2022a -dev-"
+#define VERSION "30October2022a -dev-"
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -148,11 +148,13 @@ void setup()
   dcp_ser.addParser("hlp", printHelp);
   dcp_ser.addParser("mvp", multipleVariableParser);
   dcp_ser.addParser("tra", selectTrack);
+  dcp_ser.addParser("all", playAllTracks);
   dcp_ser.addParser("vol", setVolume);
   printParserCommands();
 
   dcp_udp.addParser("inf", getInfo);
   dcp_udp.addParser("tra", selectTrack);
+  dcp_udp.addParser("all", playAllTracks);
   dcp_udp.addParser("vol", setVolume);
 
   Serial.println("end of setup()");

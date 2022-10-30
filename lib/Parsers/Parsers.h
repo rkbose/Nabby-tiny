@@ -6,15 +6,13 @@
 #ifndef PARSERS_h
 #define PARSERS_h
 
-//parser commands for serial connection:
+//parser commands:
 void printParserCommands(void);
 String multipleVariableParser(char **values, int valueCount, bool udppackets);
 String getInfo(char **values, int valueCount, bool udppackets);
 String printHelp(char **values, int valuecount, bool udppackets);
 String selectTrack(char **values, int valueCount, bool udppackets);
 String setVolume(char **values, int valueCount, bool udppackets);
-
-//parser commands for UDP connection:
-//String getInfo_udp(char **values, int valueCount);
+String playAllTracks(char **values, int valueCount, bool udppackets);
 
 #endif
