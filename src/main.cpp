@@ -21,7 +21,7 @@
 #include <DynamicCommandParser.h>
 #include <Parsers.h>
 
-#define VERSION "30October2022b -dev-"
+#define VERSION "28Jan2023a -dev-"
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -90,7 +90,7 @@ void connectWifi()
 
   if (MDNS.begin("Nabby-mini-speaker"))
   {
-    MDNS.addService("speaker", "udp", 1234); // Announce service on port x
+    MDNS.addService("mydoorbell", "udp", 1234); // Announce service on port x
     Serial.println("MDNS responder started");
   }
   Serial.println("Sending mDNS query");
