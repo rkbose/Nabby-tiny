@@ -87,7 +87,6 @@ void DFPlayer::setModel(DFPLAYER_MODULE_TYPE moduleType)
   _moduleType = moduleType;
 }
 
-
 /**************************************************************************/
 /*
     setTimeout()
@@ -161,7 +160,7 @@ void DFPlayer::setSource(uint8_t source)
     NOTE:
     - files in the root must start with 4 decimal digits with leading zeros
       - example: SD_ROOT/0001 - My favorite song.mp3
-    - donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
+    - don’t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
       played firts
 */
 /**************************************************************************/
@@ -182,7 +181,7 @@ void DFPlayer::playTrack(uint16_t track)
     NOTE:
     - files in the root must start with 4 decimal digits with leading zeros
       - example: SD_ROOT/0001 - My favorite song.mp3
-    - donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
+    - don’t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
       played firts
 */
 /**************************************************************************/
@@ -201,7 +200,7 @@ void DFPlayer::next()
     NOTE:
     - files in the root must start with 4 decimal digits with leading zeros
       - example: SD_ROOT/0001 - My favorite song.mp3
-    - donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
+    - don’t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
       played firts
 */
 /**************************************************************************/
@@ -468,7 +467,7 @@ void DFPlayer::setEQ(uint8_t preset)
 
     NOTE:
     - command does't work when module is paused or stopped
-    - donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
+    - don’t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
       played firts
 */
  /**************************************************************************/
@@ -511,7 +510,7 @@ void DFPlayer::repeatCurrentTrack(bool enable)
     - any playback command will switch back to normal playback mode
     - files in the root must start with 4 decimal digits with leading zeros
       - example: SD_ROOT/0001 - My favorite song.mp3
-    - donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
+    - don’t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be
       played firts
 */
 /**************************************************************************/
