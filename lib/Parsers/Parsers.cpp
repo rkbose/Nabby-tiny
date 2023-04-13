@@ -19,7 +19,8 @@ void printParserCommands(void)
   Serial.print("      /mvp,x,x  --- dummy command\n");
   Serial.print("      /tra,n    --- select track\n");
   Serial.print("      /all      --- play all tracks\n");
-  Serial.print("      /vol,n    --- set volume");
+  Serial.print("      /vol,n    --- set volume\n");
+  Serial.print("      /rng      --- play bell sound");
 }
 
 /**************************************************************************/
@@ -165,4 +166,27 @@ String setVolume(char **values, int valueCount, bool udppackets)
     delay(500);
   }
   return ("[VOL done] ");
+}
+
+/**************************************************************************/
+/*
+   Parser for playing doorbell sound.
+
+    NOTE:
+    - On serial stream will print xx
+    - On UDP stream: will return xx
+*/
+/**************************************************************************/
+String RingBell(char **values, int valueCount, bool udppackets)
+{
+  if (valueCount > 1)
+    Serial.print("   ===> RingBell does not accept parameters.");
+  else
+  {
+    if (!udppackets)
+      Serial.printf("   ===> doorbell sound played");
+    mp3.playTrack(15);
+    delay(500);
+  }
+  return ("[RNG done] ");
 }

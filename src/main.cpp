@@ -150,13 +150,15 @@ void setup()
   dcp_ser.addParser("tra", selectTrack);
   dcp_ser.addParser("all", playAllTracks);
   dcp_ser.addParser("vol", setVolume);
+  dcp_ser.addParser("rng", RingBell);
   printParserCommands();
 
   dcp_udp.addParser("inf", getInfo);
   dcp_udp.addParser("tra", selectTrack);
   dcp_udp.addParser("all", playAllTracks);
   dcp_udp.addParser("vol", setVolume);
-
+  dcp_udp.addParser("rng", RingBell);
+  
   Serial.println("end of setup()");
 }
 
