@@ -21,7 +21,7 @@
 #include <DynamicCommandParser.h>
 #include <Parsers.h>
 
-#define VERSION "13Apr2023a -dev-"  // 
+#define VERSION "15Apr2023a -dev-"  // 
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
