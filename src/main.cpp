@@ -45,32 +45,12 @@ WiFiMulti wifiMulti;
 
 void connectWifi()
 {
+ WiFiUDP wifiudp;
+
   WiFi.mode(WIFI_STA); // Set WiFi to station mode and disconnect from an AP if it was previously connected
   WiFi.disconnect();
   delay(100);
-  /*
-    int n = WiFi.scanNetworks(); // WiFi.scanNetworks will return the number of networks found
-    if (n == 0)
-    {
-      Serial.println("no networks found");
-    }
-    else
-    {
-      Serial.printf("Nr networks found: %d\n", n);
-      for (int i = 0; i < n; ++i)
-      {
-        // Print SSID and RSSI for each network found
-        Serial.print(i + 1);
-        Serial.print(": ");
-        Serial.print(WiFi.SSID(i));
-        Serial.print(" (");
-        Serial.print(WiFi.RSSI(i));
-        Serial.print(")");
-        Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
-        delay(10);
-      }
-    }
-  */
+  
   wifiMulti.addAP(SSID1, PSW1);
   wifiMulti.addAP(SSID2, PSW2);
   wifiMulti.addAP(SSID3, PSW3);
@@ -93,14 +73,26 @@ void connectWifi()
     MDNS.addService("mydoorbell", "udp", 1235); // Announce service on port x
     Serial.println("MDNS responder started");
   }
-  Serial.println("Sending mDNS query");
+ 
+ // find doorbell and send scan MDNS command
   int n = MDNS.queryService("doorbell", "udp"); // Send query for mydoorbell services
+  Serial.println("mDNS query done");
   if (n == 0)
   {
-    Serial.println("mDNS 'doorbell' services not found");
+    Serial.println("no MDNS 'doorbell' services found");
   }
   else
-    Serial.printf("mDNS 'doorbell' services found: %d\n", n);
+  {
+    Serial.printf("Found %d 'doorbell' services\n", n);
+    for (int i = 0; i < n; i++)
+
+    // send MDNS scan command
+    Serial.println("\nSending MDNS scan cmd to doorbell");
+    wifiudp.beginPacket(MDNS.IP(0), MDNS.port(0));  // send udp packet to doorbell
+    wifiudp.print("/mdns\r");
+    wifiudp.endPacket();
+    delay(100);
+  }
 }
 
 void handleUdp()
