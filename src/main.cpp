@@ -20,8 +20,9 @@
 #include <dfplayer.h>
 #include <DynamicCommandParser.h>
 #include <Parsers.h>
+#include <Watchdog.h>
 
-#define VERSION "18Apr2023b -dev-" 
+#define VERSION "17Dec2024a" 
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -31,8 +32,10 @@ uint8_t response = 0;
 #define RXD2 16
 #define TXD2 17
 
+int saveTime;
+
 // Initialize the command parsers using the start, end, delimiting characters
-// A seperate parser is instantiated for UDP. This is strictly not neccesry, but had adavateges like:
+// A seperate parser is instantiated for UDP. This is strictly not neccesry, but had advantages like:
 //    - the udp parser can have different commands (or delimiting chars) then the serial parser, or a subset/superset of commands
 //    - with one parser there is a very small chance serial commands mix up with udp commands. Seperation resolves this
 // Downside is memory space.
@@ -52,8 +55,8 @@ void connectWifi()
   delay(100);
   
   wifiMulti.addAP(SSID1, PSW1);
-  wifiMulti.addAP(SSID2, PSW2);
-  wifiMulti.addAP(SSID3, PSW3);
+  // wifiMulti.addAP(SSID2, PSW2); // more routers can be registered, strongest RSSI will be selected. SSID needs definition in secret.h
+  // wifiMulti.addAP(SSID3, PSW3); // more routers can be registered, strongest RSSI will be selected. SSID needs definition in secret.h
 
   Serial.print("Connecting Wifi -");
   while (wifiMulti.run() != WL_CONNECTED)
@@ -87,7 +90,7 @@ void connectWifi()
     for (int i = 0; i < n; i++)
 
     // send MDNS scan command
-    Serial.println("\nSending MDNS scan cmd to doorbell");
+    Serial.println("\nSending MDNS scan cmd to doorbell"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
     wifiudp.beginPacket(MDNS.IP(0), MDNS.port(0));  // send udp packet to doorbell
     wifiudp.print("/mdns\r");
     wifiudp.endPacket();
@@ -108,11 +111,19 @@ void handleUdp()
   }
 }
 
+void wdCallback(void)
+{
+ Serial.printf("...WATCHDOG TIMEOUT...\n");
+}
+Watchdog doorbellGuard((int)1000, wdCallback);
+
 void setup()
 {
   version = VERSION;
   Serial.begin(115200); // debug interface
   Serial.print("\nNabby-tiny is starting\n");
+
+  saveTime = millis();
 
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // MP# interface connection
   //  Serial.println("Serial2 Txd is on pin: " + String(TXD2));
@@ -156,6 +167,7 @@ void setup()
 
 int i = 0;
 char c;
+
 void loop()
 {
   // Serial2.print(".");
@@ -170,4 +182,11 @@ void loop()
     //   dcp_ser.appendChar(c);
   }
   handleUdp(); // handle and parse commands received via UDP
+  
+  if ((millis() - saveTime)>1000) 
+  {
+    doorbellGuard.tick();
+    saveTime = millis();
+  } 
+
 }
