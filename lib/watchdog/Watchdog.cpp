@@ -37,6 +37,7 @@ void wdInit(int timeout)
 void wdTrigger(void)
 {
   timerWrite(watchdogTimer, 0); // reset the timer
+  isrTriggered = false;
 }
 
 /**************************************************************************/

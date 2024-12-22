@@ -169,10 +169,6 @@ unsigned long lastWDtrigger = 0;
 
 void loop()
 {
-  // Serial2.print(".");
-  // i++;
-
-  // Serial.printf("i: %d\n", i);
   while (Serial.available() > 0)
   {
     c = Serial.read();
@@ -194,7 +190,7 @@ void loop()
         Serial.println("no MDNS 'doorbell' services found");
       else
       {
-        Serial.printf("Found %d 'doorbell' services", nr);
+   //     Serial.printf("Found %d 'doorbell' services", nr);
         Serial.println("=> Sending MDNS scan cmd to doorbell\n"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
       }
     }
