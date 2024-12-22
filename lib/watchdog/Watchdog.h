@@ -6,27 +6,11 @@
 #ifndef WATCHDOG_h
 #define WATCHDOG_h
 
+void wdInit(int timeout);
+void wdTrigger(void);
+// void wdStop(void);
+// void wdStart(void);
+bool wdStatus(void);
 
-class Watchdog
-{
-public:
-    Watchdog(int timeout, void (*watchdogCallback)(void))
-    {
-        timeoutTime = timeout;
-        callbackFunction = watchdogCallback;
-    }
-
-    ~Watchdog()
-    {
-    }
-
-    void trigger(int time);
-    void stop(void);
-    void tick(void);
-
-private:
-    int timeoutTime;
-    void (*callbackFunction)(void);
-};
 
 #endif

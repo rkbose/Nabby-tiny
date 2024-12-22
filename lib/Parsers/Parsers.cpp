@@ -7,6 +7,7 @@
 #include <dfplayer.h>
 #include "Parsers.h"
 #include <AsyncUDP.h>
+#include <Watchdog.h>
 
 extern DFPlayer mp3;
 extern String version;
@@ -20,7 +21,8 @@ void printParserCommands(void)
   Serial.print("      /tra,n    --- select track\n");
   Serial.print("      /all      --- play all tracks\n");
   Serial.print("      /vol,n    --- set volume\n");
-  Serial.print("      /rng      --- play bell sound");
+  Serial.print("      /rng      --- play bell sound\n");
+  Serial.print("      /twd      --- trigger watchdog");
 }
 
 /**************************************************************************/
@@ -189,4 +191,24 @@ String RingBell(char **values, int valueCount, bool udppackets)
     delay(500);
   }
   return ("[RNG done] ");
+}
+
+/**************************************************************************/
+/*
+   Parser for ping. The doorbell unit sends frequent pings.
+   On reception, the watchdog will be triggered.
+*/
+/**************************************************************************/
+String Ping(char **values, int valueCount, bool udppackets)
+{
+  if (valueCount > 1)
+    Serial.print("   ===> Ping does not accept parameters.");
+  else
+  {
+    if (!udppackets)
+      Serial.printf("   ===> watchdog triggered.");
+  }
+  Serial.print(" ping handled\n");
+  wdTrigger();
+  return ("[PNG done] ");
 }

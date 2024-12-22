@@ -22,7 +22,9 @@
 #include <Parsers.h>
 #include <Watchdog.h>
 
-#define VERSION "17Dec2024a" 
+// #include <freertos/timers.h>
+
+#define VERSION "22Dec2024a"
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -32,8 +34,6 @@ uint8_t response = 0;
 #define RXD2 16
 #define TXD2 17
 
-int saveTime;
-
 // Initialize the command parsers using the start, end, delimiting characters
 // A seperate parser is instantiated for UDP. This is strictly not neccesry, but had advantages like:
 //    - the udp parser can have different commands (or delimiting chars) then the serial parser, or a subset/superset of commands
@@ -41,19 +41,17 @@ int saveTime;
 // Downside is memory space.
 //
 DynamicCommandParser dcp_ser('/', 0x0D, ','); // parser for serial
-DynamicCommandParser dcp_udp('/', 0x0D, ',');  // parser for udp
+DynamicCommandParser dcp_udp('/', 0x0D, ','); // parser for udp
 
 AsyncUDP udp;
 WiFiMulti wifiMulti;
 
 void connectWifi()
 {
- WiFiUDP wifiudp;
-
   WiFi.mode(WIFI_STA); // Set WiFi to station mode and disconnect from an AP if it was previously connected
   WiFi.disconnect();
   delay(100);
-  
+
   wifiMulti.addAP(SSID1, PSW1);
   // wifiMulti.addAP(SSID2, PSW2); // more routers can be registered, strongest RSSI will be selected. SSID needs definition in secret.h
   // wifiMulti.addAP(SSID3, PSW3); // more routers can be registered, strongest RSSI will be selected. SSID needs definition in secret.h
@@ -76,46 +74,37 @@ void connectWifi()
     MDNS.addService("mydoorbell", "udp", 1235); // Announce service on port x
     Serial.println("MDNS responder started");
   }
- 
- // find doorbell and send scan MDNS command
+}
+
+int finddoorbell(void) // find doorbell and send scan MDNS command
+{
+  WiFiUDP wifiudp;
   int n = MDNS.queryService("doorbell", "udp"); // Send query for mydoorbell services
   Serial.println("mDNS query done");
-  if (n == 0)
+  if (n > 0)
   {
-    Serial.println("no MDNS 'doorbell' services found");
-  }
-  else
-  {
-    Serial.printf("Found %d 'doorbell' services\n", n);
-    for (int i = 0; i < n; i++)
-
     // send MDNS scan command
-    Serial.println("\nSending MDNS scan cmd to doorbell"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
-    wifiudp.beginPacket(MDNS.IP(0), MDNS.port(0));  // send udp packet to doorbell
+    wifiudp.beginPacket(MDNS.IP(0), MDNS.port(0)); // send udp packet to doorbell
     wifiudp.print("/mdns\r");
     wifiudp.endPacket();
     delay(100);
   }
+  return (n);
 }
 
 void handleUdp()
 {
   if (udp.listen(1235))
   {
-    udp.onPacket([](AsyncUDPPacket packet)     {
-                //  Serial.printf("udp rcv: %s\n",(char *)packet.data());
-                    dcp_udp.append(&packet);
- //                  dcp_udp.append(&packet);
-//      String reply = dcp_udp.append(myString);
- });
+    udp.onPacket([](AsyncUDPPacket packet)
+                 {
+                   //  Serial.printf("udp rcv: %s\n",(char *)packet.data());
+                   dcp_udp.append(&packet);
+                   //                  dcp_udp.append(&packet);
+                   //      String reply = dcp_udp.append(myString);
+                 });
   }
 }
-
-void wdCallback(void)
-{
- Serial.printf("...WATCHDOG TIMEOUT...\n");
-}
-Watchdog doorbellGuard((int)1000, wdCallback);
 
 void setup()
 {
@@ -123,17 +112,22 @@ void setup()
   Serial.begin(115200); // debug interface
   Serial.print("\nNabby-tiny is starting\n");
 
-  saveTime = millis();
-
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // MP# interface connection
-  //  Serial.println("Serial2 Txd is on pin: " + String(TXD2));
-  //  Serial.println("Serial2 Rxd is on pin: " + String(RXD2));
 
   mp3.begin(Serial2, MP3_SERIAL_TIMEOUT, DFPLAYER_MINI, false); // DFPLAYER_MINI see NOTE, false=no response from module after the command
 
   connectWifi(); // connect to WiFi access point
-                 //  delay(2000);
-  mp3.stop();    // if player was runing during ESP8266 reboot
+ //  delay(2000);
+  int nr = finddoorbell();
+  if (nr == 0)
+    Serial.println("no MDNS 'doorbell' services found");
+  else
+  {
+    Serial.printf("Found %d 'doorbell' services", nr);
+    Serial.println("=> Sending MDNS scan cmd to doorbell\n"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
+  }
+
+  mp3.stop(); // if player was runing during ESP8266 reboot
   delay(100);
   mp3.reset(); // reset all setting to default
   delay(100);
@@ -143,7 +137,7 @@ void setup()
   delay(500);
   mp3.setVolume(14); // 0..30, module persists volume on power failure
   delay(500);
-  mp3.playTrack(2);  // play track #1, donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be played firts
+  mp3.playTrack(2); // play track #1, donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be played firts
   delay(500);
 
   // Add the parser commands to the DynamicCommandParser
@@ -154,6 +148,7 @@ void setup()
   dcp_ser.addParser("all", playAllTracks);
   dcp_ser.addParser("vol", setVolume);
   dcp_ser.addParser("rng", RingBell);
+  dcp_ser.addParser("png", Ping);
   printParserCommands();
 
   dcp_udp.addParser("inf", getInfo);
@@ -161,17 +156,21 @@ void setup()
   dcp_udp.addParser("all", playAllTracks);
   dcp_udp.addParser("vol", setVolume);
   dcp_udp.addParser("rng", RingBell);
-  
+  dcp_udp.addParser("png", Ping);
+
+  wdInit(60000); // initilize timeout on 60 seconds
+
   Serial.println("end of setup()");
 }
 
 int i = 0;
 char c;
+unsigned long lastWDtrigger = 0;
 
 void loop()
 {
   // Serial2.print(".");
-  i++;
+  // i++;
 
   // Serial.printf("i: %d\n", i);
   while (Serial.available() > 0)
@@ -182,11 +181,22 @@ void loop()
     //   dcp_ser.appendChar(c);
   }
   handleUdp(); // handle and parse commands received via UDP
-  
-  if ((millis() - saveTime)>1000) 
-  {
-    doorbellGuard.tick();
-    saveTime = millis();
-  } 
 
+  if (millis() - lastWDtrigger >= 10000) // check watchdog every 10 second. This is same timeinterval for mdnsScan
+  {
+    lastWDtrigger = millis();
+
+    if (wdStatus())
+    {
+      Serial.printf("... Watchdog Expired\n");
+      int nr = finddoorbell();
+      if (nr == 0)
+        Serial.println("no MDNS 'doorbell' services found");
+      else
+      {
+        Serial.printf("Found %d 'doorbell' services", nr);
+        Serial.println("=> Sending MDNS scan cmd to doorbell\n"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
+      }
+    }
+  }
 }

@@ -15,5 +15,6 @@ String selectTrack(char **values, int valueCount, bool udppackets);
 String setVolume(char **values, int valueCount, bool udppackets);
 String playAllTracks(char **values, int valueCount, bool udppackets);
 String RingBell(char **values, int valueCount, bool udppackets);
+String Ping(char **values, int valueCount, bool udppackets);
 
 #endif
