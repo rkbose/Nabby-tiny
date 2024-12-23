@@ -8,6 +8,7 @@
 #include "Parsers.h"
 #include <AsyncUDP.h>
 #include <Watchdog.h>
+#include <Nabby.h>
 
 extern DFPlayer mp3;
 extern String version;
@@ -18,8 +19,8 @@ void printParserCommands(void)
   Serial.print("      /inf      --- shows version\n");
   Serial.print("      /hlp      --- print commands\n");
   Serial.print("      /mvp,x,x  --- dummy command\n");
-  Serial.print("      /tra,n    --- select track\n");
-  Serial.print("      /all      --- play all tracks\n");
+  Serial.print("      /tra,n    --- select track (0=stop)\n");
+  Serial.print("      /all,x      --- play all tracks\n");
   Serial.print("      /vol,n    --- set volume\n");
   Serial.print("      /rng      --- play bell sound\n");
   Serial.print("      /twd      --- trigger watchdog");
@@ -187,7 +188,8 @@ String RingBell(char **values, int valueCount, bool udppackets)
   {
     if (!udppackets)
       Serial.printf("   ===> doorbell sound played");
-    mp3.playTrack(15);
+    mp3.playTrack(9);
+    LedNotificationCount = 30;  //30 secs led sequence
     delay(500);
   }
   return ("[RNG done] ");

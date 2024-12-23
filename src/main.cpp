@@ -9,7 +9,7 @@
 // Nabby-tiny is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 // Nabby-tiny is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 // You should have received a copy of the GNU General Public License along with Nabby-tiny. If not, see <https://www.gnu.org/licenses/>.
-//..
+//
 
 #include <HardwareSerial.h>
 #include <WiFi.h>
@@ -21,10 +21,11 @@
 #include <DynamicCommandParser.h>
 #include <Parsers.h>
 #include <Watchdog.h>
+#include <Nabby.h>
 
 // #include <freertos/timers.h>
 
-#define VERSION "22Dec2024a"
+#define VERSION "23Dec2024a"
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -33,6 +34,7 @@ DFPlayer mp3;                  // connect DFPlayer RX-pin to GPIO15(TX) & DFPlay
 uint8_t response = 0;
 #define RXD2 16
 #define TXD2 17
+
 
 // Initialize the command parsers using the start, end, delimiting characters
 // A seperate parser is instantiated for UDP. This is strictly not neccesry, but had advantages like:
@@ -117,7 +119,7 @@ void setup()
   mp3.begin(Serial2, MP3_SERIAL_TIMEOUT, DFPLAYER_MINI, false); // DFPLAYER_MINI see NOTE, false=no response from module after the command
 
   connectWifi(); // connect to WiFi access point
- //  delay(2000);
+                 //  delay(2000);
   int nr = finddoorbell();
   if (nr == 0)
     Serial.println("no MDNS 'doorbell' services found");
@@ -135,9 +137,9 @@ void setup()
                     // delay(500);
   mp3.wakeup(2);    // exit standby mode & initialize sourse 1=USB-Disk, 2=TF-Card, 3=Aux, 5=NOR Flash
   delay(500);
-  mp3.setVolume(14); // 0..30, module persists volume on power failure
+  mp3.setVolume(18); // 0..30, module persists volume on power failure
   delay(500);
-  mp3.playTrack(2); // play track #1, donâ€™t copy 0003.mp3 and then 0001.mp3, because 0003.mp3 will be played firts
+  mp3.playTrack(2); // play track #1,
   delay(500);
 
   // Add the parser commands to the DynamicCommandParser
@@ -158,7 +160,8 @@ void setup()
   dcp_udp.addParser("rng", RingBell);
   dcp_udp.addParser("png", Ping);
 
-  wdInit(60000); // initilize timeout on 60 seconds
+  initNabby();
+  wdInit(60000); // initilize watchdog timeout on 60 seconds
 
   Serial.println("end of setup()");
 }
@@ -169,6 +172,7 @@ unsigned long lastWDtrigger = 0;
 
 void loop()
 {
+  blinkLeds();
   while (Serial.available() > 0)
   {
     c = Serial.read();
@@ -190,7 +194,7 @@ void loop()
         Serial.println("no MDNS 'doorbell' services found");
       else
       {
-   //     Serial.printf("Found %d 'doorbell' services", nr);
+        //     Serial.printf("Found %d 'doorbell' services", nr);
         Serial.println("=> Sending MDNS scan cmd to doorbell\n"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
       }
     }

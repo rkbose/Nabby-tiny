@@ -23,7 +23,7 @@ static void IRAM_ATTR wdInterrupt()
 void wdInit(int timeout)
 {
   isrTriggered = false;
-  watchdogTimer = timerBegin(0, 80, true);                 // init hw timer 0; prescaler 80 (for 1msec @80 MHz clk); counting up
+  watchdogTimer = timerBegin(3, 80, true);                 // init hw timer 3; prescaler 80 (for 1msec @80 MHz clk); counting up
   timerAttachInterrupt(watchdogTimer, &wdInterrupt, true); // attached interrupt; ISR routing; edge triggerd
   timerAlarmWrite(watchdogTimer, timeout * 1000, false);   // set alarm in mSec; autoreload = false
   timerAlarmEnable(watchdogTimer);
