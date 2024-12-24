@@ -20,10 +20,10 @@ void printParserCommands(void)
   Serial.print("      /hlp      --- print commands\n");
   Serial.print("      /mvp,x,x  --- dummy command\n");
   Serial.print("      /tra,n    --- select track (0=stop)\n");
-  Serial.print("      /all,x      --- play all tracks\n");
+  Serial.print("      /all,x    --- play all tracks\n");
   Serial.print("      /vol,n    --- set volume\n");
   Serial.print("      /rng      --- play bell sound\n");
-  Serial.print("      /twd      --- trigger watchdog");
+  Serial.print("      /twd      --- trigger watchdog\n");
 }
 
 /**************************************************************************/

@@ -8,12 +8,9 @@
 
 #include <Nabby.h>
 #include "Wire.h" //used for I2C communication with IO expander MCP23017
-// #include <WiFi.h>
-// #include <WiFiMulti.h>
-// #include <Secret.h>
-// #include <AsyncUDP.h>
-// #include <ESPmDNS.h>
-// #include "freertos/timers.h"
+#include <dfplayer.h>
+
+extern DFPlayer mp3;
 
 // Left and Right motor pins and PWM definitions
 #define MOTOR_L_IN1 27    // D27 is Left ear motor IN1
@@ -31,7 +28,7 @@
 #define ENC_R 33 // right ear encoder input
 
 // setting PWM properties for heartbeat LED and PWM for left&right ear motors
-const int freq = 15000;     // in Hz
+const int freq = 15000;    // in Hz
 const int pwmChannel0 = 0; // PWM channels: 0 to 15
 const int resolution = 8;  // Resolution in bits: 8, 10, 12, 15
 
@@ -266,6 +263,67 @@ int mappingHeartbeat(int x)
   return (x);
 }
 
+// LED sequence to be played (for low byte on IO expander: GPA)
+// A0, A1, A2: G,R,B - Belly
+// A3, A4, A5: G, R, B - LEFT
+// A6, A7: G, R - MID
+#define lLG B00001000 // LeftGreen
+#define lMG B01000000 // MidGreen
+#define lRG B00000000 // RightGreen off on lowbyte
+#define lBG B00000001 // BellyGreen, not connected
+#define lLR B00010000 // LeftRed
+#define lMR B10000000 // MidRed
+#define lRR B00000000 // RightRed off on lowbyte
+#define lBR B00000010 // BellyRed, not connected
+#define lLB B00100000 // LeftBlue
+#define lMB B00000000 // MidBlue off on lowbyte
+#define lRB B00000000 // RightBlue, not connected
+#define lBB B00000100 // BellyBlue, not connected
+#define l00 B00000000 // OFF
+
+const byte cledLowArray[] = {
+    lLG | lMG | lRG, // 0
+    lLG | lMG | lRG, // 1
+    lLG | lMG | lRG, // 2
+    lLG | lMG | lRG, // 3
+    lLG | lMG | lRG, // 4
+    lLG | lMG | lRG, // 5
+    lLG | lMG | lRG, // 6
+    lLG | lMG | lRG, // 7
+    lLG | lMG | lRG  // 8
+};
+
+// LED sequence to be played (for High byte on IO expander: GPB)
+// B0: B - MID
+// B1, B2, B3: G,R,B - RIGHT
+// B4, B5, B6: G,R,B - TOP
+#define hLB B00000000 // LeftBlue off on highbyte
+#define hMB B00000001 // MidBlue
+#define hRB B00001000 // RightBlue
+#define hLG B00000000 // LeftGreen off on highbyte
+#define hMG B00000000 // MidGreen off on highbyte
+#define hRG B00000010 // RightGreen
+#define hLR B00000000 // LeftRed off on highbyte
+#define hMR B00000000 // MidRed off on highbyte
+#define hRR B00000100 // RightRed
+#define hTG B00010000 // TopGreen
+#define hTR B00100000 // TopRed
+#define hTB B01000000 // TopBlue
+#define h00 B00000000 // OFF
+
+const byte cledHighArray[] = {
+
+    hLG | hMG | hRG | hTB, // 0
+    hLG | hMG | hRG | hTB | hTR, // 1
+    hLG | hMG | hRG | hTB, // 2
+    hLG | hMG | hRG | hTB | hTR, // 3
+    hLG | hMG | hRG | hTB, // 4
+    hLG | hMG | hRG | hTB | hTR, // 5
+    hLG | hMG | hRG | hTB, // 6
+    hLG | hMG | hRG | hTB | hTR, // 7
+    hLG | hMG | hRG | hTB  // 8
+};
+/*
 const byte cledLowArray[] = {
     // LED sequence to be played (for low byte on IO expander: GPA)
     // A0, A1, A2: G,R,B - Belly
@@ -282,7 +340,7 @@ const byte cledLowArray[] = {
     B00100000, // 8  LB
     B00000010, // 9  MB
     B00000000  // 10  RB
-               // B00000010  // 11  OFF
+               // B00000000  // 11  OFF
 };
 
 const byte cledHighArray[] = {
@@ -301,15 +359,14 @@ const byte cledHighArray[] = {
     B00100000, // 8   LB
     B00100001, // 9   MB
     B00101000  // 10   RB
-               // B00100000 // 11  OFF
-};
-
+               // B00000000 // 11  OFF
+};*/
 void blinkLeds(void)
 { // time based routine for LED blinking and Nabbys button polling
   int secs = millis();
 
   if (secs > (prev_secs + 15))
-  { // each 35 mSec the heartbeat Led changes brightness
+  { // each 15 mSec the heartbeat Led changes brightness
     prev_secs = secs;
     PWM = PWM + pwmsign;
     if (PWM > 150)
@@ -326,7 +383,7 @@ void blinkLeds(void)
   }
 
   if ((LedNotificationCount > 0) and (secs > (prev_secs_cLeds + 350)))
-  { // each 250 mSec the Leds change
+  { // each 350 mSec the Leds change
     prev_secs_cLeds = secs;
     LedNotificationCount--;
     if (LedNotificationCount < 0)
@@ -338,33 +395,19 @@ void blinkLeds(void)
     colourLow = cledLowArray[cledArrayindex];
     colourHigh = cledHighArray[cledArrayindex];
     portMCP23017(colourLow, colourHigh);
-
-    if (digitalRead(NabbysButton) == 0)
-    {
-      //   PlayPause();
-      LedNotificationCount = 0;
-    }
   }
-  if (LedNotificationCount == 0)
+  if (LedNotificationCount == 1) // on 1 the leds are turned off. Only 1 time, because of audible sound clicks
   {
     portMCP23017(0, 0);
-    //  leftEarSetSpeed(1);
-    //  rightEarSetSpeed(1);
+    LedNotificationCount = 0;
+    cledArrayindex = 0;
   }
-
-  /*    if (toggle == 1) {
-        //    digitalWrite (2, LOW); // blink onboard ESP32-LED: make off
-        portMCP23017(0xff, colour);
-        toggle = 2;
-      }
-      else {
-        //    digitalWrite (2, HIGH); // blink onboard ESP32-LED: make ON
-        portMCP23017(0, colour);
-        toggle = 1;
-      }
-  */
+  if (digitalRead(NabbysButton) == 0)
+  {
+    mp3.stop();
+    LedNotificationCount = 2;
+  }
 }
-
 
 void initNabby(void)
 {
@@ -398,9 +441,11 @@ void initNabby(void)
 
   //  timerAlarmWrite(leftEarTimer, 5000000, false);  // TRUE = reload
   //  timerAlarmEnable(leftEarTimer);
-   leftEarInitialize();
-   rightEarInitialize();
-   leftEarGoto(3, -200);
-   rightEarGoto(3, 200);
-   delay(7000);
+  leftEarInitialize();
+  rightEarInitialize();
+  leftEarGoto(3, -200);
+  rightEarGoto(3, 200);
+  delay(12000);
+  leftEarSetSpeed(1);
+  rightEarSetSpeed(1);
 }

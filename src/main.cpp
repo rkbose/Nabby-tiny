@@ -25,7 +25,7 @@
 
 // #include <freertos/timers.h>
 
-#define VERSION "23Dec2024a"
+#define VERSION "24Dec2024a"
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -34,7 +34,6 @@ DFPlayer mp3;                  // connect DFPlayer RX-pin to GPIO15(TX) & DFPlay
 uint8_t response = 0;
 #define RXD2 16
 #define TXD2 17
-
 
 // Initialize the command parsers using the start, end, delimiting characters
 // A seperate parser is instantiated for UDP. This is strictly not neccesry, but had advantages like:
@@ -82,7 +81,7 @@ int finddoorbell(void) // find doorbell and send scan MDNS command
 {
   WiFiUDP wifiudp;
   int n = MDNS.queryService("doorbell", "udp"); // Send query for mydoorbell services
-  Serial.println("mDNS query done");
+ // Serial.println("mDNS query done");
   if (n > 0)
   {
     // send MDNS scan command
@@ -116,8 +115,6 @@ void setup()
 
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2); // MP# interface connection
 
-  mp3.begin(Serial2, MP3_SERIAL_TIMEOUT, DFPLAYER_MINI, false); // DFPLAYER_MINI see NOTE, false=no response from module after the command
-
   connectWifi(); // connect to WiFi access point
                  //  delay(2000);
   int nr = finddoorbell();
@@ -129,17 +126,18 @@ void setup()
     Serial.println("=> Sending MDNS scan cmd to doorbell\n"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
   }
 
-  mp3.stop(); // if player was runing during ESP8266 reboot
+  mp3.begin(Serial2, MP3_SERIAL_TIMEOUT, DFPLAYER_MINI, false); // DFPLAYER_MINI see NOTE, false=no response from module after the command
+  mp3.stop();                                                   // if player was runing during ESP8266 reboot
   delay(100);
   mp3.reset(); // reset all setting to default
   delay(100);
-  mp3.setSource(2); // 1=USB-Disk, 2=TF-Card, 3=Aux, 4=Sleep, 5=NOR Flash
-                    // delay(500);
-  mp3.wakeup(2);    // exit standby mode & initialize sourse 1=USB-Disk, 2=TF-Card, 3=Aux, 5=NOR Flash
+  mp3.setSource(2);  // 1=USB-Disk, 2=TF-Card, 3=Aux, 4=Sleep, 5=NOR Flash
+                     // delay(500);
+  mp3.setVolume(25); // 0..30, module persists volume on power failure
   delay(500);
-  mp3.setVolume(18); // 0..30, module persists volume on power failure
+  mp3.setEQ(2);
   delay(500);
-  mp3.playTrack(2); // play track #1,
+  mp3.wakeup(2); // exit standby mode & initialize sourse 1=USB-Disk, 2=TF-Card, 3=Aux, 5=NOR Flash
   delay(500);
 
   // Add the parser commands to the DynamicCommandParser
@@ -161,6 +159,7 @@ void setup()
   dcp_udp.addParser("png", Ping);
 
   initNabby();
+
   wdInit(60000); // initilize watchdog timeout on 60 seconds
 
   Serial.println("end of setup()");
@@ -188,15 +187,14 @@ void loop()
 
     if (wdStatus())
     {
-      Serial.printf("... Watchdog Expired\n");
+      //  Serial.printf("... Watchdog Expired\n");
       int nr = finddoorbell();
-      if (nr == 0)
-        Serial.println("no MDNS 'doorbell' services found");
-      else
-      {
-        //     Serial.printf("Found %d 'doorbell' services", nr);
-        Serial.println("=> Sending MDNS scan cmd to doorbell\n"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
-      }
+      //  if (nr == 0)
+      //   Serial.println("no MDNS 'doorbell' services found");
+
+      // else
+      //      Serial.printf("Found %d 'doorbell' services", nr);
+      //   Serial.println("=> Sending MDNS scan cmd to doorbell\n"); // Request all found doorbell units to perform an mdns scan. This will register the Nabby in the doorbell unit
     }
   }
 }

@@ -17,5 +17,8 @@ void initNabby(void);
 void blinkLeds(void);
 void leftEarGoto(unsigned int targetPosition, int speed);
 void rightEarGoto(unsigned int targetPosition, int speed);
+void rightEarSetSpeed(int speed);
+void leftEarSetSpeed(int speed);
+
 
 #endif

@@ -41,8 +41,6 @@
 
 #include <Arduino.h>
 
-
-
 /* UART frame values */
 #define DFPLAYER_UART_FRAME_SIZE      0x0A //total number of bytes in UART packet, same for cmd & feedback
 #define DFPLAYER_UART_START_BYTE      0x7E //start byte
