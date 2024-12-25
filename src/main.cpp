@@ -25,7 +25,7 @@
 
 // #include <freertos/timers.h>
 
-#define VERSION "24Dec2024a"
+#define VERSION "25Dec2024a"
 String version;
 
 #define MP3_SERIAL_SPEED 9600  // DFPlayer Mini suport only 9600-baud
@@ -149,6 +149,9 @@ void setup()
   dcp_ser.addParser("vol", setVolume);
   dcp_ser.addParser("rng", RingBell);
   dcp_ser.addParser("png", Ping);
+  dcp_ser.addParser("lft", LeftEar);
+  dcp_ser.addParser("rgt", RightEar);
+  dcp_ser.addParser("stp", StopEars);
   printParserCommands();
 
   dcp_udp.addParser("inf", getInfo);
@@ -157,6 +160,9 @@ void setup()
   dcp_udp.addParser("vol", setVolume);
   dcp_udp.addParser("rng", RingBell);
   dcp_udp.addParser("png", Ping);
+  dcp_udp.addParser("lft", LeftEar);
+  dcp_udp.addParser("rgt", RightEar);
+  dcp_udp.addParser("stp", StopEars);
 
   initNabby();
 

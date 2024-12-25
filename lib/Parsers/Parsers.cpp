@@ -24,6 +24,9 @@ void printParserCommands(void)
   Serial.print("      /vol,n    --- set volume\n");
   Serial.print("      /rng      --- play bell sound\n");
   Serial.print("      /twd      --- trigger watchdog\n");
+  Serial.print("      /lft,n    --- move left ear n positions\n");
+  Serial.print("      /rgt,n    --- move right ear n postions\n");
+  Serial.print("      /stp      --- stop ear movement\n");
 }
 
 /**************************************************************************/
@@ -189,7 +192,9 @@ String RingBell(char **values, int valueCount, bool udppackets)
     if (!udppackets)
       Serial.printf("   ===> doorbell sound played");
     mp3.playTrack(9);
-    LedNotificationCount = 30;  //30 secs led sequence
+    LedNotificationCount = 30; // 30 secs led sequence
+    leftEarGoto(3, -200);
+    rightEarGoto(3, -200);
     delay(500);
   }
   return ("[RNG done] ");
@@ -213,4 +218,73 @@ String Ping(char **values, int valueCount, bool udppackets)
   Serial.print(" ping handled\n");
   wdTrigger();
   return ("[PNG done] ");
+}
+
+/**************************************************************************/
+/*
+   Parser for left ear movement
+*/
+/**************************************************************************/
+String LeftEar(char **values, int valueCount, bool udppackets)
+{
+  if (valueCount != 2)
+    Serial.print("   ===> lft requires one parameter.");
+  else
+  {
+    if (!udppackets)
+      Serial.printf("   ===> Left Ear moved.");
+  }
+  int jj;
+  sscanf(values[1], "%d", &jj);
+  if (jj < 0)
+    jj = 0;
+  if (jj > 9)
+    jj = 9;
+  leftEarGoto(jj, 200);
+
+  return ("[LFT done] ");
+}
+
+/**************************************************************************/
+/*
+   Parser for right ear movement
+*/
+/**************************************************************************/
+String RightEar(char **values, int valueCount, bool udppackets)
+{
+  if (valueCount != 2)
+    Serial.print("   ===> rgt requires one parameter.");
+  else
+  {
+    if (!udppackets)
+      Serial.printf("   ===> Right Ear moved.");
+  }
+  int jj;
+  sscanf(values[1], "%d", &jj);
+  if (jj < 0)
+    jj = 0;
+  if (jj > 9)
+    jj = 9;
+  rightEarGoto(jj, 200);
+
+  return ("[RGT done] ");
+}
+
+/**************************************************************************/
+/*
+   Parser for stop ear movement
+*/
+/**************************************************************************/
+String StopEars(char **values, int valueCount, bool udppackets)
+{
+  if (valueCount > 1)
+    Serial.print("   ===> stp does not accept parameters.");
+  else
+  {
+    if (!udppackets)
+      Serial.printf("   ===> ears stopped.");
+  }
+  leftEarSetSpeed(1);
+  rightEarSetSpeed(1);
+  return ("[STP done] ");
 }

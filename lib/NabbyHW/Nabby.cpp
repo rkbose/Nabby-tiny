@@ -314,13 +314,13 @@ const byte cledLowArray[] = {
 const byte cledHighArray[] = {
 
     hLG | hMG | hRG | hTB, // 0
-    hLG | hMG | hRG | hTB | hTR, // 1
+    hLG | hMG | hRG | hTR, // 1
     hLG | hMG | hRG | hTB, // 2
-    hLG | hMG | hRG | hTB | hTR, // 3
+    hLG | hMG | hRG | hTR, // 3
     hLG | hMG | hRG | hTB, // 4
-    hLG | hMG | hRG | hTB | hTR, // 5
+    hLG | hMG | hRG | hTR, // 5
     hLG | hMG | hRG | hTB, // 6
-    hLG | hMG | hRG | hTB | hTR, // 7
+    hLG | hMG | hRG | hTR, // 7
     hLG | hMG | hRG | hTB  // 8
 };
 /*
@@ -401,11 +401,15 @@ void blinkLeds(void)
     portMCP23017(0, 0);
     LedNotificationCount = 0;
     cledArrayindex = 0;
+    leftEarSetSpeed(1);
+    rightEarSetSpeed(1);
   }
   if (digitalRead(NabbysButton) == 0)
   {
     mp3.stop();
     LedNotificationCount = 2;
+    leftEarSetSpeed(1);
+    rightEarSetSpeed(1);
   }
 }
 
