@@ -7,11 +7,12 @@ It is an ESP32 based project. The repo 'Nabby repo' contains the doorbell unit d
 The repo 'Nabby-ABI' contains an Android app design which can be used as remote control for Nabby.
 
 References and wikipge with description:
+
    [repository Nabby ABI with android app](https://github.com/rkbose/Nabby-ABI)
    
-   [in](https://github.com/rkbose/Nabby-tiny-doorbell)
+   [repository with doorbell unbit](https://github.com/rkbose/Nabby-tiny-doorbell)
    
-   [in](https://github.com/rkbose/Nabby-tiny/wiki/Nabby-Rabbit-home-automation-%E2%80%90-Rabbit-as-doorbell-unit) 
+   [repository with wiki system description](https://github.com/rkbose/Nabby-tiny/wiki/Nabby-Rabbit-home-automation-%E2%80%90-Rabbit-as-doorbell-unit) 
 
 Nabby is fully functional with following features:
 - mDNS (multicast) based service discovery on WiFi Expandable: Nabby and doorbellunit support multiple Nabby's and multible doorbell units
