@@ -7,7 +7,7 @@ It is an ESP32 based project. The repo 'Nabby repo' contains the doorbell unit d
 The repo 'Nabby-ABI' contains an Android app design which can be used as remote control for Nabby.
 
 References and wikipge with description:
-   [in](https://github.com/rkbose/Nabby-ABI)
+   [repository Nabby ABI with android app](https://github.com/rkbose/Nabby-ABI)
    
    [in](https://github.com/rkbose/Nabby-tiny-doorbell)
    
