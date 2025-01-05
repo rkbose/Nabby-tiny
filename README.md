@@ -28,6 +28,7 @@ Nabby is fully functional with following features:
 - For debugging Nabby can be commanded via command language via serial commands (connected via USB)
 - Commands support: ear control, LED control, MP3 player control, version readout, playing music etc.
 - Watchdog class to detect loss of connection between doorbell and Nabby
+- VS code with PlatformIO development environment.
 
 The repository contains electronic schematic diagrams of Nabby and of the doorbell unit.
 
