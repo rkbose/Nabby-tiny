@@ -10,7 +10,7 @@ References and wikipge with description:
 
    [repository Nabby ABI with android app](https://github.com/rkbose/Nabby-ABI)
    
-   [repository with doorbell unbit](https://github.com/rkbose/Nabby-tiny-doorbell)
+   [repository with doorbell unit](https://github.com/rkbose/Nabby-tiny-doorbell)
    
    [repository with wiki system description](https://github.com/rkbose/Nabby-tiny/wiki/Nabby-Rabbit-home-automation-%E2%80%90-Rabbit-as-doorbell-unit) 
 
