@@ -2,7 +2,7 @@ Nabaztag-messenger Nabby a Nabaztag rabbit based messenger Project
 created by Raj Bose, July 2020
 
 This project was created to convert an old non functioning NABAZTAG rabbit into a messaging system connected on Wifi.
-Main funtion is a wifi connected doorbell unit. The Nabbaztag is nicknamed "Nabby". 
+Main function is a wifi connected doorbell unit. The Nabbaztag is nicknamed "Nabby". 
 It is an ESP32 based project. The repo 'Nabby repo' contains the doorbell unit design which is connected to the doorbell. 
 The repo 'Nabby-ABI' contains an Android app design which can be used as remote control for Nabby.
 
